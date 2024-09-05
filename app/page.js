@@ -1,77 +1,105 @@
 "use client";
 
 import { useEffect } from "react";
+import { useState } from 'react';
 import * as d3 from "d3";
 import Head from "next/head";
 import styles from "./page.module.css";
-
 export default function Home() {
+    const [data, setData] = useState(null);
+    const [input, setInput] = useState('');
+
+    const handleInputChange = (event) => {
+        setInput(event.target.value);
+    };
+
+    const handleSubmit = (event) => {
+        event.preventDefault();
+        try {
+            const parsedData = JSON.parse(input);
+            setData(parsedData);
+        } catch (error) {
+            alert("Invalid JSON data. Please check your input.");
+        }
+    };
+
+    return (
+        <main>
+            <Head>
+                <title>Mind Map Input</title>
+                <style>
+                    {`
+                    .tooltip {
+                        position: absolute;
+                        text-align: center;
+                        padding: 10px;
+                        font: 12px sans-serif;
+                        background: rgba(0, 0, 0, 0.8);
+                        color: white;
+                        border-radius: 4px;
+                        pointer-events: none;
+                        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+                        max-width: 300px;
+                        word-wrap: break-word;
+                    }
+
+                    .scroll-container {
+                        width: 100%;
+                        height: 100vh;
+                        overflow: auto;
+                        position: relative;
+                    }
+
+                    svg {
+                        display: block;
+                        height: 100%;
+                        width: auto; /* Adjust width based on content */
+                    }
+
+                    .input-container {
+                        margin: 20px;
+                    }
+
+                    textarea {
+                        width: 100%;
+                        height: 200px;
+                        margin-bottom: 10px;
+                        font-family: monospace;
+                    }
+
+                    button {
+                        padding: 10px 20px;
+                        font-size: 16px;
+                        cursor: pointer;
+                    }
+                    `}
+                </style>
+            </Head>
+            <div className="input-container">
+                <h1>Mind Map Input</h1>
+                <form onSubmit={handleSubmit}>
+                    <textarea
+                        value={input}
+                        onChange={handleInputChange}
+                        placeholder="Enter JSON data here..."
+                    ></textarea>
+                    <button type="submit">Render Mind Map</button>
+                </form>
+            </div>
+            {data && <RenderMap data={data} />}
+        </main>
+    );
+}
+function RenderMap({ data }) {
     useEffect(() => {
         console.log("useEffect is running");
 
         // Clear any existing SVG content
         d3.select("#mindmap-svg").selectAll("*").remove();
 
-        const data = {
-            name: "Reliability Design Principles",
-            children: [
-                {
-                    name: "Reliability design principles",
-                    children: [
-                        { name: "grandchild1" },
-                        { name: "grandchild2" }
-                    ],
-                    link: "https://learn.microsoft.com/en-us/azure/well-architected/reliability/principles#reliability-design-principles",
-                    summary: "Reliability design principles focus on strategies and methodologies to enhance the dependability of products and systems. Key concepts include redundancy, fault tolerance, preventive maintenance, and robust testing to minimize failure rates and ensure consistent performance.",
-                },
-                {
-                    name: "In this article",
-                    children: [
-                        { name: "grandchild1" },
-                        { name: "grandchild2" }
-                    ],
-                    link: "https://learn.microsoft.com/en-us/azure/well-architected/reliability/principles#in-this-article",
-                    summary: "The 'In this article' section provides an overview of the key reliability design principles, outlining the importance of reliability in product development and the main concepts that will be discussed. It sets the stage for a deeper exploration of strategies to enhance product reliability.",
-                },
-                {
-                    name: "Design for business requirements",
-                    children: [
-                        { name: "grandchild1" },
-                        { name: "grandchild2" }
-                    ],
-                    link: "https://learn.microsoft.com/en-us/azure/well-architected/reliability/principles#design-for-business-requirements",
-                    summary: "The 'Design for business requirements' section emphasizes aligning product reliability with organizational goals and customer needs. It highlights the importance of understanding business priorities to inform design choices that enhance overall performance and satisfaction.",
-                },
-                {
-                    name: "Design for resilience",
-                    link: "https://learn.microsoft.com/en-us/azure/well-architected/reliability/principles#design-for-resilience",
-                    summary: "This section emphasizes creating systems that can withstand and recover from disruptions, ensuring continued functionality under adverse conditions. It highlights the importance of redundancy, flexibility, and adaptability in design to enhance overall reliability.",
-                },
-                {
-                    name: "Design for recovery",
-                    children: [
-                        { name: "grandchild1" },
-                        { name: "grandchild2" }
-                    ],
-                    link: "https://learn.microsoft.com/en-us/azure/well-architected/reliability/principles#design-for-recovery",
-                    summary: "This principle emphasizes creating systems that can quickly restore functionality after a failure, incorporating features that allow for easy identification and rectification of issues to minimize downtime and maintain service continuity.",
-                },
-                {
-                    name: "Design for operations",
-                    link: "https://learn.microsoft.com/en-us/azure/well-architected/reliability/principles#design-for-operations",
-                    summary: "This section emphasizes creating systems and products that facilitate smooth, efficient operation and maintenance, ensuring ease of use and minimizing the likelihood of operational failures. It focuses on user-centered design and proactive troubleshooting measures.",
-                },
-                {
-                    name: "Keep it simple",
-                    link: "https://learn.microsoft.com/en-us/azure/well-architected/reliability/principles#keep-it-simple",
-                    summary: "The 'Keep it simple' section emphasizes the importance of designing systems with minimal complexity to enhance reliability. By reducing unnecessary features and focusing on essential functions, the likelihood of errors and failures is decreased.",
-                },
-            ],
-        };
-
         const margin = { top: 20, right: 120, bottom: 20, left: 120 };
         const height = window.innerHeight - margin.top - margin.bottom;
-        const width = 2000; // Initial width for SVG
+        const width = window.innerWidth; // Initial width for SVG
 
         // Create SVG container
         const svg = d3
@@ -81,14 +109,14 @@ export default function Home() {
             .append("g")
             .attr("transform", `translate(${margin.left},${margin.top})`);
 
-        const tree = d3.tree().size([height, width - margin.left - margin.right]);
+        const tree = d3.tree().size([height, width/1.5]);
 
         const root = d3.hierarchy(data);
         tree(root);
 
         // Calculate SVG width dynamically based on the content
-        const svgWidth = Math.max(...root.descendants().map(d => d.y)) + margin.right + 100; // Add extra margin
-        d3.select("#mindmap-svg").attr("width", svgWidth);
+        // const svgWidth = Math.max(...root.descendants().map(d => d.y)) + margin.right + 100; // Add extra margin
+        d3.select("#mindmap-svg").attr("width", window.innerWidth);
 
         // Tooltip div
         const tooltip = d3.select("#mindmap")
@@ -105,8 +133,8 @@ export default function Home() {
             .attr("class", "link")
             .attr("d", (d) => `
                 M${d.y},${d.x}
-                C${(d.y + d.parent.y) / 2},${d.x}
-                ${(d.y + d.parent.y) / 2},${d.parent.x}
+                C${(d.y + d.parent.y ) / 2},${d.x}
+                ${(d.y + d.parent.y  ) / 2},${d.parent.x}
                 ${d.parent.y},${d.parent.x}
             `)
             .style("fill", "none")
@@ -165,7 +193,7 @@ export default function Home() {
             .attr("dy", "0.35em")
             .attr("x", (d) => (d.children ? -20 : 20))
             .style("text-anchor", (d) => (d.children ? "end" : "start"))
-            .style("font", "12px sans-serif")
+            .style("font", "20px sans-serif")
             .style("fill", "#fff")
             .text((d) => d.data.name)
             .each(function () {
