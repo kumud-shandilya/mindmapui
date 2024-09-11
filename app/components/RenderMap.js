@@ -6,6 +6,8 @@ import * as d3 from "d3";
 import Head from "next/head";
 export default function RenderMap({ data }) {
     useEffect(() => {
+
+        console.log(data);
         console.log("useEffect is running");
 
         // Clear any existing SVG content
@@ -136,10 +138,11 @@ export default function RenderMap({ data }) {
                     .style("fill", textColor);
                     ///.style("stroke", textColor === "white" ? "#000" : "#fff");
 
-                 if (textColor !== "#333333") {
+                if (textColor !== "#333333") {
                     d3.select(this).style("text-shadow", "1px 1px 2px rgba(0, 0, 0, 0.5)");
-                }
+                };
 
+                if (d.depth < 2) {
                 d3.select(this.parentNode).insert("rect", ":first-child")
                     .attr("x", bbox.x - 10)
                     .attr("y", bbox.y - 15)
@@ -151,7 +154,9 @@ export default function RenderMap({ data }) {
                     .style("stroke", "#495057")
                     .style("stroke-width", "1px")
                     .style("box-shadow", "0 4px 8px rgba(0, 0, 0, 0.1)");
+                    }
             });
+            
 
         node
             .append("title")

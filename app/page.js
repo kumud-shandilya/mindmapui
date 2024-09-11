@@ -43,7 +43,7 @@ export default function Home() {
     const openURLInNewTab = (url) => {
         window.open(`http://${url}`, '_blank', 'noopener,noreferrer');
     };
-
+    /*
     const handleSubmit = (event) => {
         event.preventDefault();
         if (isValidURL(inputURL)) {
@@ -112,6 +112,45 @@ export default function Home() {
             setPageSummary("The provided URL is invalid.");
         }
     };
+    */
+
+   const handleSubmit = async (event) => {
+    event.preventDefault();
+
+    if (isValidURL(inputURL)) {
+        try {
+            // Make the API call
+            const response = await fetch('http://127.0.0.1:5001/get_mindmap_data', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    url: inputURL,
+                    user_prompt: userPrompt
+                }),
+            });
+
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            console.log(response);
+            const data_ = await response.json();
+            const data = JSON.parse(data_);
+            console.log(data);
+            // Set the data and page summary states
+            setData(data);
+            setPageSummary(data.page_summary);
+        } catch (error) {
+            console.error('An error occurred:', error);
+            setPageSummary('An error occurred while fetching data.');
+        }
+    } else {
+        console.error('Invalid URL');
+        setPageSummary('The provided URL is invalid.');
+    }
+};
+
 
     return (
         <div className={styles.container}>

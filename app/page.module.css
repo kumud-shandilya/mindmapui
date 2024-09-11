@@ -22,6 +22,8 @@
     flex: 1;
     margin-right: 10px;
     height: 50px; /* Adjusted height to half */
+    background-color: white;
+    color: black;
 }
 
 .button {
@@ -33,7 +35,8 @@
     border: 1px solid #ccc;
     padding: 10px;
     border-radius: 5px;
-    background-color: #f9f9f9;
+    background-color: white;
+    color: black;
 }
 
 .urlBox {
